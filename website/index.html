@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tweet Analysis</title>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+    <!-- Bootstrap for styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .row { margin-top: 20px; }
+        .card { padding: 15px; border-radius: 8px; background: #f8f9fa; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); }
+        .card h3 { font-size: 20px; margin-bottom: 10px; }
+        .analysis-text { font-size: 16px; font-weight: bold; color: #333; }
+        .view-more { color: blue; cursor: pointer; text-decoration: underline; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center">Tweet Analysis</h2>
+
+        <!-- Row 1 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card" id="politics">
+                    <h3>Politics</h3>
+                    <p class="analysis-text"></p>
+                    <span class="view-more" onclick="toggleFullText('politics')">View More</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card" id="sports">
+                    <h3>Sports</h3>
+                    <p class="analysis-text"></p>
+                    <span class="view-more" onclick="toggleFullText('sports')">View More</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card" id="technology">
+                    <h3>Technology</h3>
+                    <p class="analysis-text"></p>
+                    <span class="view-more" onclick="toggleFullText('technology')">View More</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card" id="others">
+                    <h3>Others</h3>
+                    <p class="analysis-text"></p>
+                    <span class="view-more" onclick="toggleFullText('others')">View More</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyABhfoWm2JE_oKwn9Iqh9d0FqDGk4xEMWA",
+            authDomain: "test-58e04.firebaseapp.com",
+            projectId: "test-58e04",
+            storageBucket: "test-58e04.appspot.com",  // ✅ Corrected storageBucket
+            messagingSenderId: "149138315946",
+            appId: "1:149138315946:web:813a84fded048ecc350ed3",
+            measurementId: "G-TKSZR976PY"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Function to fetch analysis and display it with limited words
+        function fetchAnalysis(category) {
+            const ref = db.ref(`tweet_analysis/2025-02-11_analysis/Analysis/${category}/analysis`);
+            ref.once("value").then(snapshot => {
+                const fullText = snapshot.val() || "No analysis available.";
+                const words = fullText.split(" ");
+                const shortText = words.length > 20 ? words.slice(0, 20).join(" ") + "..." : fullText;
+                
+                const categoryDiv = document.querySelector(`#${category.toLowerCase()} .analysis-text`);
+                categoryDiv.textContent = shortText;
+                categoryDiv.dataset.fullText = fullText;
+                categoryDiv.dataset.shortText = shortText;
+            }).catch(error => {
+                console.error("Error fetching analysis:", error);
+            });
+        }
+
+        // Function to toggle between short and full text
+        function toggleFullText(category) {
+            const categoryDiv = document.querySelector(`#${category.toLowerCase()} .analysis-text`);
+            const viewMoreBtn = document.querySelector(`#${category.toLowerCase()} .view-more`);
+
+            if (categoryDiv.textContent === categoryDiv.dataset.shortText) {
+                categoryDiv.textContent = categoryDiv.dataset.fullText;
+                viewMoreBtn.textContent = "View Less";
+            } else {
+                categoryDiv.textContent = categoryDiv.dataset.shortText;
+                viewMoreBtn.textContent = "View More";
+            }
+        }
+
+        // Load analysis for all categories
+        fetchAnalysis("Others");
+        fetchAnalysis("Politics");
+        fetchAnalysis("Sports");
+        fetchAnalysis("Technology");
+    </script>
+</body>
+</html>
